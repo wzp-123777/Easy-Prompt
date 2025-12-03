@@ -4,45 +4,41 @@
 
 ### 第一步：克隆项目
 ```bash
-git clone https://github.com/KirisameLonnet/Easy-Prompt.git
-cd easy-prompt
+git clone https://github.com/wzp-123777/Easy-Prompt.git
+cd Easy-Prompt
 ```
 
-### 第二步：配置Python环境
+### 第二步：启动项目
+
+#### 🪟 Windows 用户 (推荐)
+1. 在项目根目录下找到 `一键启动.bat`。
+2. **双击运行**。
+3. 脚本会自动安装依赖并启动所有服务。
+
+#### 🐧 Linux / macOS 用户
+
+**1. 配置后端**
 ```bash
 # 创建虚拟环境
 python -m venv venv
-
-# 激活虚拟环境 (macOS/Linux)
 source venv/bin/activate
-# Windows用户使用: venv\Scripts\activate
 
 # 安装依赖
 pip install -r requirements.txt
-```
 
-### 第三步：启动后端服务
-```bash
-# 启动WebSocket服务器
+# 启动后端
 python main.py
 ```
-看到 `Uvicorn running on http://0.0.0.0:8010` 说明后端启动成功！
 
-### 第四步：启动前端界面
+**2. 配置前端** (新开终端)
 ```bash
-# 新开一个终端，进入前端目录
 cd web-client/EasyP-webui
-
-# 安装前端依赖
 npm install
-
-# 启动开发服务器
 npm run dev
 ```
-看到 `Local: http://localhost:9000` 说明前端启动成功！
 
-### 第五步：开始使用
-1. 打开浏览器访问 `http://localhost:9000`
+### 第三步：开始使用
+1. 浏览器会自动打开 (或访问 `http://localhost:9000`)
 2. 点击右上角的"设置"按钮配置API
 3. 推荐使用DeepSeek API（便宜好用）：
    - API类型：选择 "OpenAI兼容"
