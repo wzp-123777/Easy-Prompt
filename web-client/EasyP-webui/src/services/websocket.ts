@@ -127,8 +127,41 @@ class WebSocketService {
 
   // API配置相关方法
   public setApiConfig(config: ApiConfig): void {
-    this.apiConfig.value = config;
-    this.saveApiConfig(config);
+    // sanitize string fields to avoid invisible/control characters (tabs/newlines)
+    const sanitized: ApiConfig = {
+      api_type: config.api_type,
+      api_key: (config.api_key || '').trim(),
+      base_url: (config.base_url || '').trim(),
+      model: (config.model || '').trim(),
+      evaluator_model: config.evaluator_model ? config.evaluator_model.trim() : '',
+      temperature: config.temperature,
+      max_tokens: config.max_tokens,
+      nsfw_mode: config.nsfw_mode
+    };
+
+    this.apiConfig.value = sanitized;
+    this.saveApiConfig(sanitized);
+
+    // Also persist configuration to backend so server-side init can happen
+    // If we have a session id, attach it so the backend can store metadata
+    try {
+      apiService.setApiConfig(sanitized, this.currentSessionId.value || undefined)
+        .then((res) => {
+          if (res && res.success) {
+            this.apiConfigured.value = true;
+            this.log('后端 API 配置保存并初始化成功', res);
+          } else {
+            this.apiConfigured.value = false;
+            this.log('后端 API 配置初始化失败', res);
+          }
+        })
+        .catch((err) => {
+          this.apiConfigured.value = false;
+          this.log('调用后端 setApiConfig 出错', { err: String(err) });
+        });
+    } catch (err) {
+      console.warn('Failed to persist API config to backend:', err);
+    }
   }
 
   public getApiConfig(): ApiConfig | null {
@@ -155,12 +188,6 @@ class WebSocketService {
       const saved = localStorage.getItem('api-config');
       if (saved) {
         const config = JSON.parse(saved);
-        // 检查配置是否包含旧的默认值，如果是则清理
-        if (this.hasOldDefaultValues(config)) {
-          console.log('检测到旧的默认配置，正在清理...');
-          this.clearApiConfig();
-          return null;
-        }
         return config;
       }
     } catch (error) {
@@ -201,10 +228,10 @@ class WebSocketService {
       type: 'api_config',
       payload: {
         api_type: this.apiConfig.value.api_type,
-        api_key: this.apiConfig.value.api_key,
-        base_url: this.apiConfig.value.base_url,
-        model: this.apiConfig.value.model,
-        evaluator_model: this.apiConfig.value.evaluator_model,
+        api_key: (this.apiConfig.value.api_key || '').trim(),
+        base_url: (this.apiConfig.value.base_url || '').trim(),
+        model: (this.apiConfig.value.model || '').trim(),
+        evaluator_model: this.apiConfig.value.evaluator_model ? this.apiConfig.value.evaluator_model.trim() : '',
         temperature: this.apiConfig.value.temperature,
         max_tokens: this.apiConfig.value.max_tokens,
         nsfw_mode: this.apiConfig.value.nsfw_mode
@@ -320,7 +347,8 @@ class WebSocketService {
     // 直接加载API配置和会话列表
     const savedConfig = this.loadApiConfig();
     if (savedConfig && this.isConfigComplete(savedConfig)) {
-      this.apiConfig.value = savedConfig;
+      // use setApiConfig to sanitize before using/sending
+      this.setApiConfig(savedConfig);
       this.sendApiConfig();
     } else {
       this.apiConfig.value = { ...emptyApiConfig };

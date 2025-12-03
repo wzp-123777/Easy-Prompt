@@ -26,7 +26,7 @@ pip install -r requirements.txt
 # 启动WebSocket服务器
 python main.py
 ```
-看到 `Uvicorn running on http://0.0.0.0:8000` 说明后端启动成功！
+看到 `Uvicorn running on http://0.0.0.0:8010` 说明后端启动成功！
 
 ### 第四步：启动前端界面
 ```bash
@@ -104,9 +104,9 @@ A：保存在项目的 `sessions/` 目录下，每个会话都有独立的文件
 ```
 Error: [Errno 48] Address already in use
 ```
-**解决**：端口8000被占用，关闭占用的程序或修改端口：
+**解决**：端口8010被占用，关闭占用的程序或修改端口：
 ```bash
-python main.py --port 8001
+python main.py --port 8011
 ```
 
 #### 前端连接失败

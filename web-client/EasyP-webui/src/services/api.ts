@@ -2,7 +2,7 @@
  * REST API Service for Session Management
  * 会话管理的REST API服务
  */
-import type { Session, SessionCreate, SessionUpdate, ChatMessage, EvaluationData } from 'src/types/websocket';
+import type { Session, SessionCreate, SessionUpdate, ChatMessage, EvaluationData, ApiConfiguration } from 'src/types/websocket';
 import { API_BASE_URL } from 'src/config/backend';
 
 export interface ApiResponse<T = unknown> {
@@ -103,6 +103,16 @@ class ApiService {
   async getSessionEvaluation(sessionId: string): Promise<EvaluationData | null> {
     const response = await this.request<EvaluationData>(`/sessions/${sessionId}/evaluation`);
     return response.data || null;
+  }
+
+  // Save API configuration on the backend. Optionally bind to an existing session.
+  async setApiConfig(config: ApiConfiguration, sessionId?: string): Promise<{ success: boolean; message: string }>{
+    const endpoint = sessionId ? `/config?session_id=${encodeURIComponent(sessionId)}` : '/config';
+    const response = await this.request<{ success: boolean; message: string }>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
+    return response;
   }
 }
 

@@ -482,7 +482,7 @@ source venv/bin/activate  # Linux/macOS
 # venv\Scripts\activate   # Windows
 
 # 启动开发服务器
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8010
 ```
 
 #### 9.1.2 启动前端服务
@@ -494,8 +494,8 @@ npm run dev
 
 访问：
 - 前端应用：http://localhost:9000
-- 后端API：http://localhost:8000
-- API文档：http://localhost:8000/docs
+- 后端API：http://localhost:8010
+- API文档：http://localhost:8010/docs
 
 ### 9.2 代码规范
 
@@ -722,7 +722,7 @@ import json
 
 async def test_websocket_flow():
     """测试WebSocket完整流程"""
-    uri = "ws://localhost:8000/ws/prompt"
+    uri = "ws://localhost:8010/ws/prompt"
     
     async with websockets.connect(uri) as websocket:
         # 1. 发送API配置
@@ -761,7 +761,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 8010
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
@@ -770,7 +770,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ```bash
 docker build -t easy-prompt .
-docker run -p 8000:8000 -v $(pwd)/env:/app/env easy-prompt
+docker run -p 8010:8010 -v $(pwd)/env:/app/env easy-prompt
 ```
 
 #### 11.1.2 前端部署
@@ -800,7 +800,7 @@ export MAX_SESSIONS=1000
 
 ```nginx
 upstream easy_prompt_backend {
-    server localhost:8000;
+    server localhost:8010;
     server localhost:8001;
 }
 

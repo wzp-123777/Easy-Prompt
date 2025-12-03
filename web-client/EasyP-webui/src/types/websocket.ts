@@ -90,18 +90,20 @@ export interface UserConfirmation {
   };
 }
 
+export interface ApiConfiguration {
+  api_type: 'gemini' | 'openai';
+  api_key?: string;
+  base_url?: string;
+  model?: string;
+  evaluator_model?: string; // Gemini专用评估模型
+  temperature?: number;
+  max_tokens?: number;
+  nsfw_mode?: boolean;
+}
+
 export interface ApiConfig {
   type: 'api_config';
-  payload: {
-    api_type: 'gemini' | 'openai';
-    api_key?: string;
-    base_url?: string;
-    model?: string;
-    evaluator_model?: string; // Gemini专用评估模型
-    temperature?: number;
-    max_tokens?: number;
-    nsfw_mode?: boolean;
-  };
+  payload: ApiConfiguration;
 }
 
 export interface StartSession {

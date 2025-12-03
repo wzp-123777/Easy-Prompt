@@ -304,10 +304,10 @@ POST   /api/sessions/{session_id}/share # 分享会话
 #### WebSocket
 ```python
 # 当前：直接连接
-ws://localhost:8000/ws/prompt
+ws://localhost:8010/ws/prompt
 
 # 未来：带认证
-ws://localhost:8000/ws/prompt?token={jwt_token}
+ws://localhost:8010/ws/prompt?token={jwt_token}
 ```
 
 ### 配置化

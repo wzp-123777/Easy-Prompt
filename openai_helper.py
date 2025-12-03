@@ -34,16 +34,25 @@ def init_openai_llm(api_key: str, base_url: str, model: str, temperature: float 
     """
     global openai_config
     
+    # sanitize inputs: trim whitespace (including tabs/newlines) and normalize base_url
+    api_key_clean = api_key.strip() if isinstance(api_key, str) else api_key
+    base_url_clean = base_url.strip().rstrip('/') if isinstance(base_url, str) else base_url
+    model_clean = model.strip() if isinstance(model, str) else model
+
+    # Basic validation: ensure base_url doesn't contain control or non-printable characters
+    if isinstance(base_url_clean, str) and any(ord(c) < 32 for c in base_url_clean):
+        raise ValueError(f"Invalid characters in base_url: {repr(base_url)}")
+
     openai_config.update({
-        "api_key": api_key,
-        "base_url": base_url.rstrip('/'),
-        "model": model,
+        "api_key": api_key_clean,
+        "base_url": base_url_clean,
+        "model": model_clean,
         "temperature": temperature,
         "max_tokens": max_tokens,
         "nsfw_mode": nsfw_mode
     })
     
-    print(f"OpenAI兼容API已配置: {base_url} -> {model} (R18: {'开启' if nsfw_mode else '关闭'})")
+    print(f"OpenAI兼容API已配置: {base_url_clean} -> {model_clean} (R18: {'开启' if nsfw_mode else '关闭'})")
 
 def is_openai_configured() -> bool:
     """检查OpenAI配置是否完整"""
@@ -130,6 +139,9 @@ def _make_openai_request(messages: list, stream: bool = False) -> dict:
     
     # 检查base_url是否已经包含完整路径，如果没有则添加/chat/completions
     base_url = openai_config['base_url']
+    # defensive check: ensure base_url is string and trimmed
+    if isinstance(base_url, str):
+        base_url = base_url.strip()
     if base_url.endswith('/chat/completions'):
         url = base_url
     elif base_url.endswith('/v1'):

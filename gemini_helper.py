@@ -38,17 +38,27 @@ def init_gemini_llm(api_key: str, model: str = "gemini-2.5-flash", evaluator_mod
     if not evaluator_model:
         evaluator_model = model
     
+    # sanitize inputs
+    api_key_clean = api_key.strip() if isinstance(api_key, str) else api_key
+    model_clean = model.strip() if isinstance(model, str) else model
+    evaluator_model_clean = evaluator_model.strip() if isinstance(evaluator_model, str) else evaluator_model
+
+    # basic validation
+    if isinstance(api_key_clean, str) and any(ord(c) < 32 for c in api_key_clean):
+        print(f"错误: API key 包含不可见字符: {repr(api_key)}")
+        return False
+
     gemini_config.update({
-        "api_key": api_key,
-        "model": model,
-        "evaluator_model": evaluator_model,
+        "api_key": api_key_clean,
+        "model": model_clean,
+        "evaluator_model": evaluator_model_clean,
         "temperature": temperature,
         "nsfw_mode": nsfw_mode
     })
     
     try:
         # 配置Gemini API
-        genai.configure(api_key=api_key)
+        genai.configure(api_key=api_key_clean)
         
         # 安全设置
         safety_settings = None

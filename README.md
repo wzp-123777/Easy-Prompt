@@ -141,8 +141,8 @@ npm run dev
 ### 4. 访问应用
 
 - **前端**: http://localhost:9000
-- **后端API**: http://localhost:8000
-- **API文档**: http://localhost:8000/docs
+- **后端API**: http://localhost:8010
+- **API文档**: http://localhost:8010/docs
 
 ## ⚙️ 环境配置
 
@@ -282,7 +282,7 @@ source venv/bin/activate  # Linux/macOS
 uvicorn main:app --reload
 
 # 查看API文档
-# http://localhost:8000/docs
+# http://localhost:8010/docs
 ```
 
 ### 前端开发

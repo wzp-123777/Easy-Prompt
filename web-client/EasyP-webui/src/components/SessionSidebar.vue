@@ -431,13 +431,13 @@ watch(() => props.currentSessionId, () => {
 .session-sidebar {
   width: 280px;
   height: 100%;
-  background-color: #f7f7f8;
-  border-right: 1px solid #e5e5e5;
+  background-color: #FFF5F8; // 浅粉色背景
+  border-right: 1px solid #FFE5EC;
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 0 8px rgba(255, 143, 171, 0.1);
 
   &.collapsed {
     width: 60px;
@@ -449,8 +449,8 @@ watch(() => props.currentSessionId, () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #e5e5e5;
-  background-color: #fff;
+  border-bottom: 1px solid #FFE5EC;
+  background-color: #FFF0F5;
 
   &.collapsed {
     flex-direction: column;
@@ -463,12 +463,14 @@ watch(() => props.currentSessionId, () => {
 
   .new-chat-btn {
     flex: 1;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s ease;
+    background: linear-gradient(90deg, #FF8FAB 0%, #FB6F92 100%) !important;
+    border-radius: 12px;
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+      box-shadow: 0 4px 12px rgba(251, 111, 146, 0.3);
     }
 
     &:active {
@@ -478,6 +480,7 @@ watch(() => props.currentSessionId, () => {
 
   .new-chat-btn-collapsed {
     transition: all 0.2s ease;
+    background: linear-gradient(135deg, #FF8FAB 0%, #FB6F92 100%) !important;
 
     &:hover {
       transform: scale(1.1);
@@ -491,9 +494,10 @@ watch(() => props.currentSessionId, () => {
   .collapse-btn {
     flex-shrink: 0;
     transition: all 0.2s ease;
+    color: #FB6F92;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.08);
+      background-color: rgba(255, 143, 171, 0.1);
       transform: scale(1.1);
     }
 
@@ -510,19 +514,23 @@ watch(() => props.currentSessionId, () => {
 
 .search-box {
   padding: 12px;
-  border-bottom: 1px solid #e5e5e5;
-  background-color: #fff;
+  border-bottom: 1px solid #FFE5EC;
+  background-color: #FFF0F5;
 
   :deep(.q-field__control) {
     transition: all 0.2s ease;
+    background-color: white !important;
+    border: 1px solid #FFE5EC;
 
     &:hover {
-      background-color: #f0f0f0;
+      background-color: #fff !important;
+      border-color: #FF8FAB;
     }
   }
 
   :deep(.q-field--focused .q-field__control) {
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    box-shadow: 0 0 0 2px rgba(255, 143, 171, 0.2);
+    border-color: #FF8FAB;
   }
 }
 
@@ -542,7 +550,7 @@ watch(() => props.currentSessionId, () => {
   .group-title {
     font-size: 12px;
     font-weight: 600;
-    color: #6e6e80;
+    color: #FB6F92;
     padding: 8px 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -568,6 +576,7 @@ watch(() => props.currentSessionId, () => {
   padding: 48px 24px;
   text-align: center;
   animation: fadeIn 0.5s ease;
+  color: #FF8FAB;
 }
 
 .collapsed-list {
@@ -580,18 +589,18 @@ watch(() => props.currentSessionId, () => {
     align-items: center;
     justify-content: center;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: #6e6e80;
+    color: #FF8FAB;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.05);
+      background-color: rgba(255, 143, 171, 0.1);
     }
 
     &.active {
-      background-color: #ececf1;
-      color: #10a37f;
+      background-color: #FFE5EC;
+      color: #FB6F92;
     }
   }
 }
@@ -599,13 +608,13 @@ watch(() => props.currentSessionId, () => {
 // 暗色主题支持
 .body--dark {
   .session-sidebar {
-    background-color: #202123;
-    border-right-color: #2a2b32;
+    background-color: #2C1A1D;
+    border-right-color: #3D2428;
   }
 
   .sidebar-header {
-    border-bottom-color: #2a2b32;
-    background-color: #202123;
+    border-bottom-color: #3D2428;
+    background-color: #2C1A1D;
 
     .collapse-btn:hover {
       background-color: rgba(255, 255, 255, 0.08);
@@ -613,30 +622,33 @@ watch(() => props.currentSessionId, () => {
   }
 
   .search-box {
-    border-bottom-color: #2a2b32;
-    background-color: #202123;
+    border-bottom-color: #3D2428;
+    background-color: #2C1A1D;
 
     :deep(.q-field__control) {
+      background-color: #1A0F10 !important;
+      border-color: #3D2428;
+      
       &:hover {
-        background-color: #2a2b32;
+        border-color: #FB6F92;
       }
     }
   }
 
   .group-title {
-    color: #8e8ea0;
+    color: #FF8FAB;
   }
 
   .collapsed-item {
-    color: #8e8ea0;
+    color: #FF8FAB;
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.05);
     }
 
     &.active {
-      background-color: #2a2b32;
-      color: #10a37f;
+      background-color: #3D2428;
+      color: #FB6F92;
     }
   }
 }

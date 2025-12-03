@@ -6,9 +6,9 @@ This document provides detailed information about the WebSocket API for the Easy
 
 The single WebSocket endpoint for all interactions is:
 
-- **URL**: `ws://<your_server_address>:8000/ws/prompt`
-
-By default, when running locally, this will be `ws://127.0.0.1:8000/ws/prompt`.
++ **URL**: `ws://<your_server_address>:8010/ws/prompt`
++
+By default, when running locally, this will be `ws://127.0.0.1:8010/ws/prompt`.
 
 ## 2. Message Format
 

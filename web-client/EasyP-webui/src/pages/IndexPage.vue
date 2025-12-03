@@ -410,7 +410,9 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  background-color: #F9ECF0; // 稍微暗一点的背景
+  background-image: radial-gradient(#F0B0C0 1px, transparent 1px);
+  background-size: 20px 20px; // 添加可爱的波点背景
 }
 
 .page-container {

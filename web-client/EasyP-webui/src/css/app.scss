@@ -1,1 +1,104 @@
 // app global css in SCSS form
+
+body {
+  font-family: 'Nunito', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background-color: #F9ECF0; // 稍微暗一点的背景
+  color: #5D4037;
+}
+
+// 柔和的滚动条
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F9ECF0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F0A7A2;
+  border-radius: 10px;
+  
+  &:hover {
+    background: #E67A98;
+  }
+}
+
+// 全局卡片样式 - 更圆润，更柔和的阴影
+.q-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(230, 122, 152, 0.15) !important;
+  border: 1px solid rgba(240, 176, 192, 0.3);
+  transition: box-shadow 0.2s ease; // 仅保留阴影过渡
+
+  &:hover {
+    // 移除缩放效果，避免晕眩
+    box-shadow: 0 8px 20px rgba(230, 122, 152, 0.2) !important;
+  }
+}
+
+// 按钮样式
+.q-btn {
+  border-radius: 12px;
+  text-transform: none; // 取消大写
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &.bg-primary {
+    box-shadow: 0 4px 10px rgba(230, 122, 152, 0.4);
+  }
+
+  &:hover {
+    transform: scale(1.05); // 按钮放大稍微明显一点
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// 输入框样式
+.q-field__control {
+  border-radius: 12px !important;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.01);
+  }
+}
+
+// 侧边栏激活状态
+.q-drawer {
+  background-color: #FFF0F4;
+  
+  .q-item.q-router-link--active, .q-item--active {
+    background: linear-gradient(90deg, #FCE4EC 0%, #FFF0F4 100%);
+    color: #E05E80;
+    border-right: 3px solid #E05E80;
+    
+    .q-icon {
+      color: #E05E80;
+    }
+  }
+}
+
+// 对话气泡优化 (基础样式，具体在组件中定义)
+.chat-message {
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.01);
+  }
+}
+
+// 工具栏
+.q-toolbar {
+  background: linear-gradient(90deg, #E67A98 0%, #F0B0C0 100%) !important;
+}
+
+// 分割线
+.q-separator {
+  background-color: #FCE4EC !important;
+}

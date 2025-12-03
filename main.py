@@ -18,6 +18,7 @@ from schemas import (
 )
 from session_manager import SessionManager, get_session_manager
 from session_routes import router as session_router
+from typing import Optional
 
 # 移除所有认证功能，直接使用API配置
 
@@ -37,6 +38,13 @@ async def lifespan(app: FastAPI):
     
     evaluator_service.start()
     try:
+        # If server already has a configured global LLM (from REST /api/config), allow the socket to proceed
+        try:
+            from openai_helper import is_openai_configured as _is_openai_configured
+            from gemini_helper import is_gemini_configured as _is_gemini_configured
+        except Exception:
+            _is_openai_configured = lambda: False
+            _is_gemini_configured = lambda: False
         yield
     finally:
         evaluator_service.stop()
@@ -51,16 +59,7 @@ app = FastAPI(
 # 添加CORS中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:9000", 
-        "http://127.0.0.1:9000",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
-    ],  # 前端开发服务器地址
+    allow_origins=["*"],  # 允许所有来源，解决开发环境跨域问题
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -68,6 +67,55 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(session_router)
+
+
+@app.post("/api/config")
+async def set_api_config(api_config: ApiConfig, session_id: Optional[str] = None):
+    """Allow frontend to POST ApiConfig (so users can enter API key/model in the UI)
+
+    Optional query param `session_id` will persist the config to that session's metadata.
+    The route attempts to initialize the configured LLM and returns success/failure.
+    """
+    # sanitize string fields
+    config = {}
+    for k, v in api_config.dict().items():
+        if isinstance(v, str):
+            config[k] = v.strip()
+        else:
+            config[k] = v
+
+    # If the caller did not include an api_key, try to reuse existing server-side key
+    try:
+        from openai_helper import openai_config as _openai_config
+    except Exception:
+        _openai_config = None
+
+    try:
+        from gemini_helper import gemini_config as _gemini_config
+    except Exception:
+        _gemini_config = None
+
+    if not config.get('api_key'):
+        if config.get('api_type') == 'openai' and _openai_config and _openai_config.get('api_key'):
+            config['api_key'] = _openai_config.get('api_key')
+        elif config.get('api_type') == 'gemini' and _gemini_config and _gemini_config.get('api_key'):
+            config['api_key'] = _gemini_config.get('api_key')
+
+    # Try to initialize API (reuse existing initialize_api path)
+    ok = initialize_api(config)
+    if ok:
+        # Persist to session metadata if provided
+        if session_id:
+            try:
+                from profile_manager import ProfileManager
+                pm = ProfileManager(session_id=session_id)
+                pm.update_session_metadata({"api_config": config, "api_type": config.get("api_type", "unknown")})
+            except Exception as e:
+                print(f"Warning: unable to persist api_config to session {session_id}: {e}")
+
+        return {"success": True, "message": "API配置已初始化"}
+    else:
+        return {"success": False, "message": "API初始化失败，请检查配置参数"}
 
 evaluator_service = EvaluatorService()
 
@@ -164,7 +212,22 @@ async def websocket_endpoint(
     current_api_config = get_empty_api_config()
 
     try:
-        # 1. 等待API配置
+        # 1. 等待API配置 — 如果服务器已在全局配置 LLM（例如通过 /api/config 初始化），直接跳过要求
+        try:
+            from openai_helper import is_openai_configured as _is_openai_configured
+            from gemini_helper import is_gemini_configured as _is_gemini_configured
+        except Exception:
+            _is_openai_configured = lambda: False
+            _is_gemini_configured = lambda: False
+
+        if _is_openai_configured() or _is_gemini_configured():
+            await send_json(websocket, "api_config_result", {
+                "success": True,
+                "message": "API（服务器端）已配置 — 直接接受连接"
+            })
+            api_initialized = True
+
+        # 继续等待API配置（如果当前连接尚未配置）
         while not api_initialized:
             raw_data = await websocket.receive_text()
             data = json.loads(raw_data)
@@ -173,8 +236,12 @@ async def websocket_endpoint(
             payload = data.get("payload", {})
 
             if message_type == "api_config":
-                # 客户端配置API
-                current_api_config.update(payload)
+                # 客户端配置API — sanitize string fields to remove accidental whitespace/control chars
+                for k, v in payload.items():
+                    if isinstance(v, str):
+                        current_api_config[k] = v.strip()
+                    else:
+                        current_api_config[k] = v
 
                 # Initialize API with new configuration
                 if initialize_api(current_api_config):
@@ -209,8 +276,12 @@ async def websocket_endpoint(
             payload = data.get("payload", {})
 
             if message_type == "api_config":
-                # Allow runtime API reconfiguration for THIS websocket only
-                current_api_config.update(payload)
+                # Allow runtime API reconfiguration for THIS websocket only — sanitize incoming strings
+                for k, v in payload.items():
+                    if isinstance(v, str):
+                        current_api_config[k] = v.strip()
+                    else:
+                        current_api_config[k] = v
                 if initialize_api(current_api_config):
                     await send_json(websocket, "api_config_result", {
                         "success": True,
@@ -384,12 +455,59 @@ async def get_api_status():
     return status
 
 
+
+@app.get("/api/debug/config")
+async def debug_config():
+    """Debug endpoint (local only) — returns masked configuration state without secret values.
+
+    NOTE: This endpoint intentionally masks API keys (first/last 4 characters) to avoid leaking secrets.
+    """
+    try:
+        from openai_helper import openai_config, is_openai_configured
+    except Exception:
+        openai_config = None
+
+    try:
+        from gemini_helper import gemini_config, is_gemini_configured
+    except Exception:
+        gemini_config = None
+
+    def mask_key(key: str | None) -> str | None:
+        if not key:
+            return None
+        if len(key) <= 8:
+            return f"{key[:2]}...{key[-2:]}"
+        return f"{key[:4]}...{key[-4:]}"
+
+    response = {
+        "openai": None,
+        "gemini": None
+    }
+
+    if openai_config is not None:
+        response["openai"] = {
+            "configured": is_openai_configured(),
+            "base_url": openai_config.get("base_url"),
+            "model": openai_config.get("model"),
+            "api_key_masked": mask_key(openai_config.get("api_key"))
+        }
+
+    if gemini_config is not None:
+        response["gemini"] = {
+            "configured": is_gemini_configured(),
+            "model": gemini_config.get("model"),
+            "api_key_masked": mask_key(gemini_config.get("api_key"))
+        }
+
+    return response
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "main:app",
         host="127.0.0.1",
-        port=8000,
+        port=8010,
         reload=True,
         log_level="info"
     )
